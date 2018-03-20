@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jax-ws xmlns="http://www.netbeans.org/ns/jax-ws/1">
   <services>
-    <service name="TrainLineup">
-      <implementation-class>tk.tup.trainlineup2.TrainLineup</implementation-class>
+    <service name="VoiceAssistantOps">
+      <implementation-class>tk.tup.capstone.VoiceAssistantOps</implementation-class>
+    </service>
+    <service name="WebAppOps">
+      <implementation-class>tk.tup.capstone.WebAppOps</implementation-class>
+    </service>
+    <service name="VoiceAssistantLog">
+      <implementation-class>tk.tup.capstone.VoiceAssistantLog</implementation-class>
     </service>
   </services>
   <clients/>

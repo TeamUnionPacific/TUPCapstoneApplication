@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <endpoints version="2.0" xmlns="http://java.sun.com/xml/ns/jax-ws/ri/runtime">
-  <endpoint implementation="tk.tup.trainlineup2.TrainLineup" name="TrainLineup" url-pattern="/TrainLineup"/>
+  <endpoint implementation="tk.tup.capstone.VoiceAssistantOps" name="VoiceAssistantOps" url-pattern="/VoiceAssistantOps"/>
+  <endpoint implementation="tk.tup.capstone.WebAppOps" name="WebAppOps" url-pattern="/WebAppOps"/>
+  <endpoint implementation="tk.tup.capstone.VoiceAssistantLog" name="VoiceAssistantLog" url-pattern="/VoiceAssistantLog"/>
 </endpoints>
