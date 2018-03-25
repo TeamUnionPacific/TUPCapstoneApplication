@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tk.tup.capstone;
 
 import javax.jws.WebService;
@@ -18,7 +13,7 @@ import org.json.JSONException;
 
 /**
  *
- * @author agbaydan
+ * @author Daniel Agbay
  */
 @WebService(serviceName = "VoiceAssistantOps")
 public class VoiceAssistantOps {
@@ -35,7 +30,7 @@ public class VoiceAssistantOps {
         try{
           // connect to database
           Class.forName("com.mysql.jdbc.Driver");
-          Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/UnionPacific","unionpacific","UnionPacificDB");
+          Connection conn = DriverManager.getConnection("jdbc:mysql://174.138.38.48/UnionPacific","unionpacific","UnionPacificDB");
           System.out.println("Connection Succeeded!");
 
           // set up the query to get trains based off a lineup id
