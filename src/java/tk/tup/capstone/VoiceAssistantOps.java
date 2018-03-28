@@ -92,11 +92,16 @@ public class VoiceAssistantOps {
      * @return integer
      */
     @WebMethod(operationName = "getEmpPosition")
-    public int getEmpPosition() {
+    public String getEmpPosition() {
         Random rand = new Random();
         // 50 is maximum, 1 is minimum
-        int  n = rand.nextInt(50) + 1;
-        return n;
+        Integer position = rand.nextInt(25) + 1;
+        
+        JSONObject resultJson = new JSONObject();
+        resultJson.put("position", position);
+        
+        String result = resultJson.toString();
+        return result;
     }
     
     /*

@@ -13,11 +13,6 @@
         <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
-    <servlet>
-        <servlet-name>VoiceAssistantLog</servlet-name>
-        <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
     <servlet-mapping>
         <servlet-name>VoiceAssistantOps</servlet-name>
         <url-pattern>/VoiceAssistantOps</url-pattern>
@@ -25,10 +20,6 @@
     <servlet-mapping>
         <servlet-name>WebAppOps</servlet-name>
         <url-pattern>/WebAppOps</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>VoiceAssistantLog</servlet-name>
-        <url-pattern>/VoiceAssistantLog</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
