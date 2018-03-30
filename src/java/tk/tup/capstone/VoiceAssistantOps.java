@@ -104,8 +104,7 @@ public class VoiceAssistantOps {
         JSONObject resultJson = new JSONObject();
         resultJson.put("position", position);
         
-        String result = resultJson.toString();
-        return result;
+        return resultJson.toString();
     }
 
     /**
@@ -148,7 +147,6 @@ public class VoiceAssistantOps {
             stmt.setString(1, assistantId);
             ResultSet rs = stmt.executeQuery();
             
-            
             // retrieve the UnionPacificId
             while(rs.next()){
                 UnionPacificId = rs.getString("UnionPacificId");
@@ -172,6 +170,70 @@ public class VoiceAssistantOps {
             System.out.println(ex);
         }
          
+    }
+
+    /**
+     * Web service operation
+     * @param AmazonAlexaId
+     * @return PreferredName
+     */
+    @WebMethod(operationName = "getPreferences")
+    public String getPreferences(@WebParam(name = "AmazonAlexaId") String AmazonAlexaId) {
+        Connection conn;
+        String PreferredName = "";
+        String TimeFormat = "";
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection(db_host,db_username,db_password);
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
+            return "";
+        }
+        
+        try {
+            String query = "SELECT PreferredName, TimeFormat FROM users WHERE AmazonAlexaId = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, AmazonAlexaId);
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                PreferredName = rs.getString("PreferredName");
+                TimeFormat = rs.getString("TimeFormat");
+            }
+            
+        } catch(SQLException ex) {
+            
+        }
+        
+        JSONObject resultJson = new JSONObject();
+        resultJson.put("PreferredName", PreferredName);
+        resultJson.put("TimeFormat", TimeFormat);
+        return resultJson.toString();
+    }
+
+    /**
+     * Web service operation
+     * @param AmazonAlexaId
+     * @param name
+     */
+    @WebMethod(operationName = "updatePreferredName")
+    @Oneway
+    public void updatePreferredName(@WebParam(name = "AmazonAlexaId") String AmazonAlexaId, @WebParam(name = "name") String name) {
+        Connection conn;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection(db_host,db_username,db_password);
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+        
+        try {
+            String query = "UPDATE users SET PreferredName = ? WHERE AmazonAlexaId = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, name);
+            stmt.setString(2, AmazonAlexaId);
+            stmt.executeUpdate();
+        } catch(SQLException ex) {}
     }
     
     
