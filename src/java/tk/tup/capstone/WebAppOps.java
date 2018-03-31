@@ -39,7 +39,6 @@ public class WebAppOps {
     {
         Connection conn;
         String result = "";
-        String parameters = "";
         try {
             Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection(db_host,db_username,db_password);
@@ -105,7 +104,6 @@ public class WebAppOps {
                 stmt = conn.prepareStatement(query);
                 for(int i=1; i<=params.size(); i++){
                     stmt.setString(i, params.get(i-1));
-                    parameters += params.get(i-1) + " " + i + "; ";
                 }
             }
             
