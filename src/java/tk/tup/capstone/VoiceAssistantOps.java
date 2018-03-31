@@ -12,6 +12,9 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.jws.Oneway;
+import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  *
@@ -27,10 +30,11 @@ public class VoiceAssistantOps {
     /**
      * Web service operation
      * @param trainLineupId
+     * @param timeFormat
      * @return String
      */
     @WebMethod(operationName = "getTrainLineup")
-    public String getTrainLineup(@WebParam(name = "trainLineupId") int trainLineupId) {
+    public String getTrainLineup(@WebParam(name = "trainLineupId") int trainLineupId, @WebParam(name = "timeFormat") String timeFormat) {
         Connection conn;
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -72,7 +76,10 @@ public class VoiceAssistantOps {
               ArrayList<String> row = new ArrayList<>();
 
               row.add(rs.getString("TrainId"));
-              row.add(rs.getString("DepartureTime"));
+              
+              String depTime = rs.getString("DepartureTime");
+              row.add(formatTime(depTime, timeFormat));
+              
               row.add(rs.getString("Name"));
               row.add(rs.getString("LineupId"));
 
@@ -89,6 +96,26 @@ public class VoiceAssistantOps {
         }
 
         return result;
+    }
+    
+    /**
+     * Return time formatted to Military or AMPM time
+     * @param depTime
+     * @param timeFormat
+     * @return String
+     */
+    public String formatTime(String depTime, String timeFormat){              
+        DateTimeFormatter military = DateTimeFormat.forPattern("HH:mm:ss");
+        LocalTime time = military.parseLocalTime(depTime);
+        String militaryTime = military.print(time);
+        if("AMPM".equals(timeFormat)){
+            DateTimeFormatter ampm = DateTimeFormat.forPattern("hh:mm:ss a");
+            String ampmTime = ampm.print(time);
+            return ampmTime;
+        }
+        else{
+            return militaryTime;
+        }        
     }
 
     /**
@@ -213,11 +240,11 @@ public class VoiceAssistantOps {
     /**
      * Web service operation
      * @param AmazonAlexaId
-     * @param name
+     * @param PreferredName
      */
     @WebMethod(operationName = "updatePreferredName")
     @Oneway
-    public void updatePreferredName(@WebParam(name = "AmazonAlexaId") String AmazonAlexaId, @WebParam(name = "name") String name) {
+    public void updatePreferredName(@WebParam(name = "AmazonAlexaId") String AmazonAlexaId, @WebParam(name = "PreferredName") String PreferredName) {
         Connection conn;
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -230,7 +257,33 @@ public class VoiceAssistantOps {
         try {
             String query = "UPDATE users SET PreferredName = ? WHERE AmazonAlexaId = ?";
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, name);
+            stmt.setString(1, PreferredName);
+            stmt.setString(2, AmazonAlexaId);
+            stmt.executeUpdate();
+        } catch(SQLException ex) {}
+    }
+
+    /**
+     * Web service operation
+     * @param AmazonAlexaId
+     * @param TimeFormat
+     */
+    @WebMethod(operationName = "updateTimeFormat")
+    @Oneway
+    public void updateTimeFormat(@WebParam(name = "AmazonAlexaId") String AmazonAlexaId, @WebParam(name = "TimeFormat") String TimeFormat) {
+        Connection conn;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection(db_host,db_username,db_password);
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+        
+        try {
+            String query = "UPDATE users SET TimeFormat = ? WHERE AmazonAlexaId = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, TimeFormat);
             stmt.setString(2, AmazonAlexaId);
             stmt.executeUpdate();
         } catch(SQLException ex) {}

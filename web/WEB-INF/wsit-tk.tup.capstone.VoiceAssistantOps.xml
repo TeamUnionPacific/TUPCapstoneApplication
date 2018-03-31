@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+ <definitions 
+ xmlns="http://schemas.xmlsoap.org/wsdl/" 
+ xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="VoiceAssistantOps" targetNamespace="http://capstone.tup.tk/" xmlns:tns="http://capstone.tup.tk/" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702" xmlns:sc="http://schemas.sun.com/2006/03/wss/server" xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy" 
+ >
+    <message name="getTrainLineup"/>
+    <message name="getTrainLineupResponse"/>
+    <message name="getEmpPosition"/>
+    <message name="getEmpPositionResponse"/>
+    <message name="generateLog"/>
+    <message name="generateLogResponse"/>
+    <message name="getPreferences"/>
+    <message name="getPreferencesResponse"/>
+    <message name="updatePreferredName"/>
+    <message name="updatePreferredNameResponse"/>
+    <message name="updateTimeFormat"/>
+    <message name="updateTimeFormatResponse"/>
+    <portType name="VoiceAssistantOps">
+        <operation name="getTrainLineup">
+            <input message="tns:getTrainLineup"/>
+            <output message="tns:getTrainLineupResponse"/>
+        </operation>
+        <operation name="getEmpPosition">
+            <input message="tns:getEmpPosition"/>
+            <output message="tns:getEmpPositionResponse"/>
+        </operation>
+        <operation name="generateLog">
+            <input message="tns:generateLog"/>
+            <output message="tns:generateLogResponse"/>
+        </operation>
+        <operation name="getPreferences">
+            <input message="tns:getPreferences"/>
+            <output message="tns:getPreferencesResponse"/>
+        </operation>
+        <operation name="updatePreferredName">
+            <input message="tns:updatePreferredName"/>
+            <output message="tns:updatePreferredNameResponse"/>
+        </operation>
+        <operation name="updateTimeFormat">
+            <input message="tns:updateTimeFormat"/>
+            <output message="tns:updateTimeFormatResponse"/>
+        </operation>
+    </portType>
+    <binding name="VoiceAssistantOpsPortBinding" type="tns:VoiceAssistantOps">
+        <operation name="getTrainLineup">
+            <input></input>
+            <output></output>
+        </operation>
+        <operation name="getEmpPosition">
+            <input></input>
+            <output></output>
+        </operation>
+        <operation name="generateLog">
+            <input></input>
+            <output></output>
+        </operation>
+        <operation name="getPreferences">
+            <input></input>
+            <output></output>
+        </operation>
+        <operation name="updatePreferredName">
+            <input></input>
+            <output></output>
+        </operation>
+        <operation name="updateTimeFormat">
+            <input></input>
+            <output></output>
+        </operation>
+    </binding>
+    <service name="VoiceAssistantOps">
+        <port name="VoiceAssistantOpsPort" binding="tns:VoiceAssistantOpsPortBinding"/>
+    </service>
+</definitions>
