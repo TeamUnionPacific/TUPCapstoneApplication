@@ -120,10 +120,11 @@ public class VoiceAssistantOps {
 
     /**
      * Web service operation
+     * @param assistantId
      * @return integer
      */
     @WebMethod(operationName = "getEmpPosition")
-    public String getEmpPosition() {
+    public String getEmpPosition(@WebParam(name = "assistantId") String assistantId) {
         Random rand = new Random();
         // 25 is maximum, 1 is minimum
         Integer position = rand.nextInt(25) + 1;
