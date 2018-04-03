@@ -132,7 +132,9 @@ public class WebAppOps {
               row.add(rs.getString("Intent"));
               row.add(rs.getString("Assistant"));
               row.add(rs.getString("Error"));
-              row.add(rs.getString("AddDate"));
+              String addDate = rs.getString("AddDate").substring(0,10);
+              row.add(addDate);
+//              row.add(rs.getString("AddDate"));
 
               rows.add(row);
             }
