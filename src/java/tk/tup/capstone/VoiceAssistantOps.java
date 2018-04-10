@@ -5,7 +5,6 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 
 import java.sql.*;
-//import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Random;
@@ -21,11 +20,7 @@ import org.joda.time.format.DateTimeFormatter;
  * @author Daniel Agbay
  */
 @WebService(serviceName = "VoiceAssistantOps")
-public class VoiceAssistantOps {
-    
-    private final String db_host = "jdbc:mysql://174.138.38.48/UnionPacific";
-    private final String db_username = "unionpacific";
-    private final String db_password = "UnionPacificDB";
+public class VoiceAssistantOps extends UnionPacificDB{
 
     /**
      * Web service operation
@@ -35,20 +30,24 @@ public class VoiceAssistantOps {
      */
     @WebMethod(operationName = "getTrainLineup")
     public String getTrainLineup(@WebParam(name = "trainLineupId") int trainLineupId, @WebParam(name = "timeFormat") String timeFormat) {
-        Connection conn;
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            conn = DriverManager.getConnection(db_host,db_username,db_password);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
-            return "Database connection issue";
-        }
+//        Connection conn;
+        
+//        try {
+//            Class.forName("com.mysql.jdbc.Driver");
+//            conn = DriverManager.getConnection(db_host,db_username,db_password);
+//        } catch (ClassNotFoundException | SQLException ex) {
+//            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
+//            return "Database connection issue";
+//        }
+        
+        String error = this.openConn();
+        if(!error.isEmpty()){ return error; }
 
         String result;
         try {
             // set up the query to get trains based off a lineup id
             String query = "SELECT TrainId, DepartureTime, Name, LineupId FROM TrainSchedule WHERE LineupId = ?";
-            PreparedStatement stmt = conn.prepareStatement(query);
+            PreparedStatement stmt = this.conn.prepareStatement(query);
             stmt.setInt(1, trainLineupId); // set the query parameter to trainLineupId
 
             // execute the query
@@ -87,12 +86,16 @@ public class VoiceAssistantOps {
             }
             resultJson.put("rows", rows);
 
-            // convert json object to string and close conn
+            // convert json object to string
             result = resultJson.toString();
-            conn.close();
             
-        } catch (SQLException ex){
-            result = "SQL query error.";
+        } catch (SQLException e){
+//            result = "SQL query error.";
+            JSONObject resultJson = new JSONObject();
+            resultJson.put("error",e.getMessage());
+            result = resultJson.toString();
+        } finally{
+            this.closeConn();
         }
 
         return result;
