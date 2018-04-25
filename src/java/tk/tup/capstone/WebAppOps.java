@@ -7,11 +7,9 @@ import javax.jws.WebParam;
 import java.sql.*;
 import org.json.JSONObject;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- *
+ * Class containing all operations used by our reporting web application
  * @author Daniel Agbay
  */
 @WebService(serviceName = "WebAppOps")
@@ -40,14 +38,17 @@ public class WebAppOps extends UnionPacificDB{
         date_start += " 00:00:00";
         date_end += " 23:59:59";
         try {
+            // dynamically build the query based on the parameters that were passed 
             String query = "SELECT UnionPacificId, Query, Intent, Assistant, Error, AddDate FROM AssistantQueryLogs ";
             PreparedStatement stmt;
+            // if no parameters passed: query for date range only
             if(assistants.length == 0 && intents.length == 0 && users.length == 0){
                 query += "WHERE AddDate BETWEEN ? AND ?";
                 stmt = this.conn.prepareStatement(query);
                 stmt.setString(1, date_start);
                 stmt.setString(2, date_end);
             }
+            // else: build query and set parameters
             else{
                 query += "WHERE ";
                 boolean and = false; // value to determine if "AND" clause is needed

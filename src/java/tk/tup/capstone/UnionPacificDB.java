@@ -7,6 +7,7 @@ import org.json.JSONObject;
 /**
  *
  * @author Daniel Agbay
+ * Base class containing info and methods used to connect to our database
  */
 public class UnionPacificDB {
     protected final String db_host = "jdbc:mysql://174.138.38.48/UnionPacific";

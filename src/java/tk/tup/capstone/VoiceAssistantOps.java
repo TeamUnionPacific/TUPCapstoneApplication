@@ -14,7 +14,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 /**
- *
+ * Class containing all operations used by Amazon Alexa and Google Assistant
  * @author Daniel Agbay
  */
 @WebService(serviceName = "VoiceAssistantOps")
@@ -202,6 +202,7 @@ public class VoiceAssistantOps extends UnionPacificDB{
             PreparedStatement stmt = this.conn.prepareStatement(query);
             stmt.setString(1, AmazonAlexaId);
             ResultSet rs = stmt.executeQuery();
+            // check is alexa id exists already in the db: if not then insert it
             if(rs.next() == false){
                 this.insertAlexaId(AmazonAlexaId);
                 PreferredName = "";
@@ -228,6 +229,10 @@ public class VoiceAssistantOps extends UnionPacificDB{
         return result;
     }
     
+    /**
+     * Insert an alexa id into the database
+     * @param AmazonAlexaId 
+     */
     public void insertAlexaId(String AmazonAlexaId){
         try{
             String query = "INSERT INTO users (AmazonAlexaId, PreferredName, TimeFormat) VALUES (?,?,?)";
