@@ -8,8 +8,6 @@ import java.sql.*;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.jws.Oneway;
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
@@ -30,16 +28,6 @@ public class VoiceAssistantOps extends UnionPacificDB{
      */
     @WebMethod(operationName = "getTrainLineup")
     public String getTrainLineup(@WebParam(name = "trainLineupId") int trainLineupId, @WebParam(name = "timeFormat") String timeFormat) {
-//        Connection conn;
-        
-//        try {
-//            Class.forName("com.mysql.jdbc.Driver");
-//            conn = DriverManager.getConnection(db_host,db_username,db_password);
-//        } catch (ClassNotFoundException | SQLException ex) {
-//            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
-//            return "Database connection issue";
-//        }
-        
         String error = this.openConn();
         if(!error.isEmpty()){ return error; }
 
@@ -90,10 +78,7 @@ public class VoiceAssistantOps extends UnionPacificDB{
             result = resultJson.toString();
             
         } catch (SQLException e){
-//            result = "SQL query error.";
-            JSONObject resultJson = new JSONObject();
-            resultJson.put("error",e.getMessage());
-            result = resultJson.toString();
+            result = this.handleException(e);
         } finally{
             this.closeConn();
         }
@@ -107,7 +92,7 @@ public class VoiceAssistantOps extends UnionPacificDB{
      * @param timeFormat
      * @return String
      */
-    public String formatTime(String depTime, String timeFormat){              
+    public String formatTime(String depTime, String timeFormat){
         DateTimeFormatter military = DateTimeFormat.forPattern("HH:mm:ss");
         LocalTime time = military.parseLocalTime(depTime);
         String militaryTime = military.print(time);
@@ -151,30 +136,21 @@ public class VoiceAssistantOps extends UnionPacificDB{
     public void generateLog(@WebParam(name = "assistantId") String assistantId, @WebParam(name = "query") String query, @WebParam(name = "intent") String intent, 
             @WebParam(name = "assistant") String assistant, @WebParam(name = "error") String error) {
         
-        Connection conn;
         String UnionPacificId = "";
-        
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            conn = DriverManager.getConnection(db_host,db_username,db_password);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
-            return;
-        }
+        String dberror = this.openConn();
+        if(!error.isEmpty()){ return; }
         
         try{
             String sqlQuery = "";
             // query for union pacific id based on the assistant
             if("Google".equals(assistant)){
                 sqlQuery = "SELECT UnionPacificId FROM users WHERE GoogleAssistantId = ?";
-                //select UnionPacificId from users where GoogleAssistantId = assistantId
             }
             else if("Amazon".equals(assistant)){
                 sqlQuery = "SELECT UnionPacificId FROM users WHERE AmazonAlexaId = ?";
-                //select UnionPacificId from users where AmazonAlexaId = assistantId
             }
             // prepare and execute the query
-            PreparedStatement stmt = conn.prepareStatement(sqlQuery);
+            PreparedStatement stmt = this.conn.prepareStatement(sqlQuery);
             stmt.setString(1, assistantId);
             ResultSet rs = stmt.executeQuery();
             
@@ -183,22 +159,26 @@ public class VoiceAssistantOps extends UnionPacificDB{
                 UnionPacificId = rs.getString("UnionPacificId");
             }
             
-        } catch(SQLException ex){
-            
+        } catch(SQLException e){
+            this.handleException(e);
+            this.closeConn();
+            return;
         }
         
         try{
             // log the usage into the database
             String sqlQuery = "INSERT INTO AssistantQueryLogs (UnionPacificId, Query, Intent, Assistant, Error, AddDate) VALUES (?,?,?,?,?,NOW())";
-            PreparedStatement stmt = conn.prepareStatement(sqlQuery);
+            PreparedStatement stmt = this.conn.prepareStatement(sqlQuery);
             stmt.setString(1, UnionPacificId);
             stmt.setString(2, query);
             stmt.setString(3, intent);
             stmt.setString(4, assistant);
             stmt.setString(5, error);
             stmt.executeUpdate();
-        } catch(SQLException ex){
-            System.out.println(ex);
+        } catch(SQLException e){
+            this.handleException(e);
+        } finally{
+            this.closeConn();
         }
          
     }
@@ -210,35 +190,55 @@ public class VoiceAssistantOps extends UnionPacificDB{
      */
     @WebMethod(operationName = "getPreferences")
     public String getPreferences(@WebParam(name = "AmazonAlexaId") String AmazonAlexaId) {
-        Connection conn;
+        String result = "";
         String PreferredName = "";
         String TimeFormat = "";
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            conn = DriverManager.getConnection(db_host,db_username,db_password);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
-            return "";
-        }
+        
+        String error = this.openConn();
+        if(!error.isEmpty()){ return error; }
         
         try {
             String query = "SELECT PreferredName, TimeFormat FROM users WHERE AmazonAlexaId = ?";
-            PreparedStatement stmt = conn.prepareStatement(query);
+            PreparedStatement stmt = this.conn.prepareStatement(query);
             stmt.setString(1, AmazonAlexaId);
             ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                PreferredName = rs.getString("PreferredName");
-                TimeFormat = rs.getString("TimeFormat");
+            if(rs.next() == false){
+                this.insertAlexaId(AmazonAlexaId);
+                PreferredName = "";
+                TimeFormat = "Military";
             }
+            else{
+                rs.beforeFirst();
+                while(rs.next()){
+                    PreferredName = rs.getString("PreferredName");
+                    TimeFormat = rs.getString("TimeFormat");
+                }
+            }
+            JSONObject resultJson = new JSONObject();
+            resultJson.put("PreferredName", PreferredName);
+            resultJson.put("TimeFormat", TimeFormat);
+            result = resultJson.toString();
             
-        } catch(SQLException ex) {
-            
+        } catch(SQLException e) {
+            result = this.handleException(e);
+        } finally{
+            this.closeConn();
         }
         
-        JSONObject resultJson = new JSONObject();
-        resultJson.put("PreferredName", PreferredName);
-        resultJson.put("TimeFormat", TimeFormat);
-        return resultJson.toString();
+        return result;
+    }
+    
+    public void insertAlexaId(String AmazonAlexaId){
+        try{
+            String query = "INSERT INTO users (AmazonAlexaId, PreferredName, TimeFormat) VALUES (?,?,?)";
+            PreparedStatement stmt = this.conn.prepareStatement(query);
+            stmt.setString(1, AmazonAlexaId);
+            stmt.setString(2, "");
+            stmt.setString(3, "Military");
+            stmt.executeUpdate();
+        } catch (SQLException e){
+            this.handleException(e);
+        }
     }
 
     /**
@@ -249,22 +249,20 @@ public class VoiceAssistantOps extends UnionPacificDB{
     @WebMethod(operationName = "updatePreferredName")
     @Oneway
     public void updatePreferredName(@WebParam(name = "AmazonAlexaId") String AmazonAlexaId, @WebParam(name = "PreferredName") String PreferredName) {
-        Connection conn;
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            conn = DriverManager.getConnection(db_host,db_username,db_password);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
-            return;
-        }
+        String error = this.openConn();
+        if(!error.isEmpty()){ return; }
         
         try {
             String query = "UPDATE users SET PreferredName = ? WHERE AmazonAlexaId = ?";
-            PreparedStatement stmt = conn.prepareStatement(query);
+            PreparedStatement stmt = this.conn.prepareStatement(query);
             stmt.setString(1, PreferredName);
             stmt.setString(2, AmazonAlexaId);
             stmt.executeUpdate();
-        } catch(SQLException ex) {}
+        } catch(SQLException e) {
+            this.handleException(e);
+        } finally{
+            this.closeConn();
+        }
     }
 
     /**
@@ -275,22 +273,20 @@ public class VoiceAssistantOps extends UnionPacificDB{
     @WebMethod(operationName = "updateTimeFormat")
     @Oneway
     public void updateTimeFormat(@WebParam(name = "AmazonAlexaId") String AmazonAlexaId, @WebParam(name = "TimeFormat") String TimeFormat) {
-        Connection conn;
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            conn = DriverManager.getConnection(db_host,db_username,db_password);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
-            return;
-        }
+        String error = this.openConn();
+        if(!error.isEmpty()){ return; }
         
-        try {
+        try { 
             String query = "UPDATE users SET TimeFormat = ? WHERE AmazonAlexaId = ?";
-            PreparedStatement stmt = conn.prepareStatement(query);
+            PreparedStatement stmt = this.conn.prepareStatement(query);
             stmt.setString(1, TimeFormat);
             stmt.setString(2, AmazonAlexaId);
             stmt.executeUpdate();
-        } catch(SQLException ex) {}
+        } catch(SQLException e) {
+            this.handleException(e);
+        } finally{
+            this.closeConn();
+        }
     }
     
     

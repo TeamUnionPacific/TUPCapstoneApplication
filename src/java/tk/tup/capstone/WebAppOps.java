@@ -15,12 +15,8 @@ import java.util.logging.Logger;
  * @author Daniel Agbay
  */
 @WebService(serviceName = "WebAppOps")
-public class WebAppOps {
+public class WebAppOps extends UnionPacificDB{
     
-    private final String db_host = "jdbc:mysql://174.138.38.48/UnionPacific";
-    private final String db_username = "unionpacific";
-    private final String db_password = "UnionPacificDB";
-
     /**
      * Web service operation
      * @param date_start
@@ -37,15 +33,9 @@ public class WebAppOps {
             @WebParam(name = "intents") String[] intents, 
             @WebParam(name = "users") String[] users) 
     {
-        Connection conn;
         String result = "";
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            conn = DriverManager.getConnection(db_host,db_username,db_password);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(VoiceAssistantOps.class.getName()).log(Level.SEVERE, null, ex);
-            return "Database connection issue";
-        }
+        String error = this.openConn();
+        if(!error.isEmpty()){ return error; }
         
         date_start += " 00:00:00";
         date_end += " 23:59:59";
@@ -54,7 +44,7 @@ public class WebAppOps {
             PreparedStatement stmt;
             if(assistants.length == 0 && intents.length == 0 && users.length == 0){
                 query += "WHERE AddDate BETWEEN ? AND ?";
-                stmt = conn.prepareStatement(query);
+                stmt = this.conn.prepareStatement(query);
                 stmt.setString(1, date_start);
                 stmt.setString(2, date_end);
             }
@@ -101,7 +91,7 @@ public class WebAppOps {
                 params.add(date_end);
                 
                 // prepare the statement and set the parameters
-                stmt = conn.prepareStatement(query);
+                stmt = this.conn.prepareStatement(query);
                 for(int i=1; i<=params.size(); i++){
                     stmt.setString(i, params.get(i-1));
                 }
@@ -141,10 +131,11 @@ public class WebAppOps {
             resultJson.put("rows", rows);
             
             result = resultJson.toString();
-            conn.close();
 
-        } catch(SQLException ex){
-            result = "Error";
+        } catch(SQLException e){
+            result = this.handleException(e);
+        } finally{
+            this.closeConn();
         }
         
         return result;
